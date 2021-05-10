@@ -1,0 +1,3 @@
+[submodule "ecs/ejabberd"]
+	path = ecs/ejabberd
+	url = https://github.com/vmeeting-io/ejabberd

@@ -6,12 +6,12 @@ LABEL maintainer="ProcessOne <contact@process-one.net>" \
     product="Ejabberd Community Server builder"
 
 # Get ejabberd sources, dependencies, configuration
-RUN git clone https://github.com/processone/ejabberd.git
+COPY ejabberd /ejabberd
 WORKDIR /ejabberd
 COPY vars.config .
 COPY rel/*exs rel/
-RUN git checkout ${VERSION/latest/HEAD} \
-    && mix deps.get \
+# RUN mix deps.update --all && cat mix.lock
+RUN mix deps.get \
     && (cd deps/eimp; ./configure)
 
 # Compile
@@ -89,9 +89,24 @@ COPY --chown=ejabberd:ejabberd conf conf/
 ADD --chown=ejabberd:ejabberd https://download.process-one.net/cacert.pem conf/cacert.pem
 
 # Setup runtime environment
-USER ejabberd
 VOLUME ["$HOME/database","$HOME/conf","$HOME/logs","$HOME/upload"]
 EXPOSE 1883 4369-4399 5222 5269 5280 5443
 
-ENTRYPOINT ["/home/ejabberd/bin/ejabberdctl"]
-CMD ["foreground"]
+# vmeeting setup
+COPY /rootfs/ /
+RUN chmod a+x /entrypoint.sh
+
+# Complile mofified modules that are not in ejabberd source but in deps source
+RUN mkdir -p ebin/xmpp && \
+    ./bin/erlc -o ebin/xmpp -I lib/ejabberd-21.1.0/include  modules/xmpp/*.erl && \
+    cp ebin/xmpp/*.beam lib/xmpp-1.5.2/ebin/
+
+RUN chown -R ejabberd:ejabberd /home/ejabberd
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+# RUN mkdir -p ebin/ejabberd && \
+#     ./bin/erlc -o ebin/ejabberd -I lib/ejabberd-21.1.0/include  modules/ejabberd/*.erl && cp ebin/ejabberd/*.beam lib/ejabberd-21.1.0/ebin/ && ./bin/ejabberdctl restart
+
+# RUN mkdir -p ebin/xmpp && \
+#     ./bin/erlc -o ebin/xmpp -I lib/ejabberd-21.1.0/include  modules/xmpp/*.erl && cp ebin/xmpp/*.beam lib/xmpp-1.5.2/ebin/ && ./bin/ejabberdctl restart
