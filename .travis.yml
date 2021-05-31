@@ -1,13 +1,10 @@
+os: linux
+
 dist: trusty
-sudo: required
 
 services: docker
 
-language: bash
-
-branches:
-  only:
-    - master
+language: shell
 
 before_script:
   - env | sort
@@ -15,7 +12,7 @@ before_script:
 
 script:
   - cd "$dir"
-  - travis_wait docker build --build-arg VERSION=${VERSION} -t ejabberd/ecs:travis-${VERSION} .
+  - travis_wait docker build --build-arg VERSION=latest -t ejabberd/ecs:travis-latest .
   - docker images
   - travis_retry docker run --name ejabberd -d -p 5222:5222 ejabberd/ecs && sleep 60
   - docker ps
@@ -25,15 +22,6 @@ script:
 notifications:
   email: false
 
-matrix:
-  allow_failures:
-    - env: VERSION=latest VARIANT=ecs
-    - env: VERSION=latest VARIANT=mix
-
-env: # Environments
-  - VERSION=latest VARIANT=ecs
-  - VERSION=latest VARIANT=mix
-  - VERSION=19.05 VARIANT=ecs
-  - VERSION=19.05 VARIANT=mix
-  - VERSION=19.02 VARIANT=ecs
-  - VERSION=19.02 VARIANT=mix
+env:
+  - VARIANT=ecs
+  - VARIANT=mix
