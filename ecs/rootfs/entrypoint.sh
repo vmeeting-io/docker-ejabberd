@@ -29,6 +29,7 @@ sed -i \
     -e "s/{XMPP_DOMAIN}/$XMPP_DOMAIN/g" \
     -e "s/{JWT_SECRET}/$JWT_SECRET/g" \
     -e "s/{JICOFO_COMPONENT_SECRET}/$JICOFO_COMPONENT_SECRET/g" \
+    -e "s/{DEFAULT_SITE_ID}/$DEFAULT_SITE_ID/g" \
     /home/ejabberd/conf/ejabberd.yml
 
 # for debugging
