@@ -53,15 +53,6 @@ listen:
     request_handlers:
       "/xmpp-websocket": ejabberd_http_ws
 
-  -
-    port: 5347
-    ip: "0.0.0.0"
-    module: ejabberd_service
-    access: all
-    hosts:
-      "focus.{XMPP_DOMAIN}":
-        password: "{JICOFO_COMPONENT_SECRET}"
-
 
 acl:
   local:
