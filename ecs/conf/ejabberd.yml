@@ -152,7 +152,7 @@ modules:
     hosts:
       - "internal-muc.{XMPP_DOMAIN}"
       - "muc.{XMPP_DOMAIN}"
-      - "muc.trial.{XMPP_DOMAIN}"
+      - "muc.{DEFAULT_SITE_ID}.{XMPP_DOMAIN}"
     access:
       - allow
     access_admin:
