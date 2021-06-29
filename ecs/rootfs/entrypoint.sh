@@ -30,6 +30,7 @@ sed -i \
     -e "s/{JWT_SECRET}/$JWT_SECRET/g" \
     -e "s/{JICOFO_COMPONENT_SECRET}/$JICOFO_COMPONENT_SECRET/g" \
     -e "s/{DEFAULT_SITE_ID}/$DEFAULT_SITE_ID/g" \
+    -e "s/{VMEETING_API_TOKEN}/$VMEETING_API_TOKEN/g" \
     /home/ejabberd/conf/ejabberd.yml
 
 # for debugging

@@ -52,7 +52,7 @@ listen:
     tls: false
     request_handlers:
       "/xmpp-websocket": ejabberd_http_ws
-
+      "/conferences": mod_site_license
 
 acl:
   local:
@@ -213,3 +213,6 @@ modules:
     show_os: false
   mod_participant_log: {}
   mod_muc_meeting_id: {}
+  mod_site_license:
+    vmeeting_api_token: {VMEETING_API_TOKEN}
+    xmpp_domain: {XMPP_DOMAIN}
