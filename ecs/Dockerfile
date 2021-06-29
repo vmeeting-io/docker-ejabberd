@@ -70,6 +70,7 @@ RUN apk upgrade --update musl \
     expat \
     freetds \
     gd \
+    inotify-tools \
     jpeg \
     libgd \
     libpng \
