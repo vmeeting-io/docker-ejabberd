@@ -66,7 +66,8 @@
 	      persistentroom | presencebroadcast | publicroom |
 	      public_list | roomadmins | roomdesc | roomname |
 	      roomowners | roomsecret | whois |
-	      mam | meetingId | userDeviceAccessDisabled | timeremained ]) -> [xdata_field()].
+	      mam | meetingId | userDeviceAccessDisabled | timeremained |
+		  created_timestamp ]) -> [xdata_field()].
 
 dec_int(Val) -> dec_int(Val, infinity, infinity).
 
@@ -263,6 +264,8 @@ encode(List, Lang, Required) ->
 						lists:member(userDeviceAccessDisabled, Required))];
 		{timeremained, Val} ->
 		[encode_timeremained(Val, Lang, lists:member(timeremained, Required))];
+		{created_timestamp, Val} ->
+		[encode_created_timestamp(Val, Lang, lists:member(created_timestamp, Required))];
 	    {pubsub, Val} ->
 		[encode_pubsub(Val, Lang,
 			       lists:member(pubsub, Required))];
@@ -945,6 +948,35 @@ do_decode([#xdata_field{var = <<"muc#roomconfig_timeremained">>}
 	  XMLNS, _, _) ->
     erlang:error({?MODULE,
 		  {too_many_values, <<"muc#roomconfig_timeremained">>, XMLNS}});
+
+do_decode([#xdata_field{var = <<"muc#roomconfig_created_timestamp">>,
+			values = [Value]}
+	   | Fs],
+	  XMLNS, Required, Acc) ->
+    try dec_int(Value, -1, infinity) of
+      Result ->
+	  do_decode(Fs, XMLNS,
+		    lists:delete(<<"muc#roomconfig_created_timestamp">>, Required),
+		    [{created_timestamp, Result} | Acc])
+    catch
+      _:_ ->
+	  erlang:error({?MODULE,
+			{bad_var_value, <<"muc#roomconfig_created_timestamp">>, XMLNS}})
+    end;
+do_decode([#xdata_field{var = <<"muc#roomconfig_created_timestamp">>,
+			values = []} =
+	       F
+	   | Fs],
+	  XMLNS, Required, Acc) ->
+    do_decode([F#xdata_field{var = <<"muc#roomconfig_created_timestamp">>,
+			     values = [<<>>]}
+	       | Fs],
+	      XMLNS, Required, Acc);
+do_decode([#xdata_field{var = <<"muc#roomconfig_created_timestamp">>}
+	   | _],
+	  XMLNS, _, _) ->
+    erlang:error({?MODULE,
+		  {too_many_values, <<"muc#roomconfig_created_timestamp">>, XMLNS}});
 
 do_decode([#xdata_field{var =
 			    <<"muc#roomconfig_pubsub">>,
@@ -1847,7 +1879,25 @@ encode_timeremained(Value, Lang,
 		 type = 'text-single', options = Opts, desc = <<>>,
 		 label =
 		     xmpp_tr:tr(Lang,
-				?T("timeremained)"))}.
+				?T("timeremained"))}.
+
+-spec encode_created_timestamp(integer() |
+				       undefined,
+				       binary(), boolean()) -> xdata_field().
+
+encode_created_timestamp(Value, Lang,
+				  IsRequired) ->
+    Values = case Value of
+	       undefined -> [];
+	       Value -> [enc_int(Value)]
+	     end,
+    Opts = [],
+    #xdata_field{var = <<"created_timestamp">>,
+		 values = Values, required = IsRequired,
+		 type = 'text-single', options = Opts, desc = <<>>,
+		 label =
+		     xmpp_tr:tr(Lang,
+				?T("created_timestamp"))}.
 
 -spec encode_pubsub(binary() | undefined, binary(),
 		    boolean()) -> xdata_field().
