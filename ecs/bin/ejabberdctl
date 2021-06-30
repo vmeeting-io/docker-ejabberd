@@ -283,6 +283,28 @@ post_waiter_loop()
     [ "$HEAD" = "$TAIL" ] || post_waiter_loop $TAIL
 }
 
+module_watcher_fork()
+{
+    if [ "$VMEETING_MODE" == "development" ]; then
+        ($0 module_watcher)&
+    fi
+}
+
+module_watcher_loop()
+{
+    echo "module watcher started"
+    cd /home/ejabberd
+    while [ 1 ]; do
+        inotifywait -e modify,create ejabberd-modules |
+            while read path action file; do
+                echo "$action event is fired : $path$file"
+                bin/erlc -o lib/ejabberd-21.1.0/ebin -I lib/ejabberd-21.1.0/include ejabberd-modules/$file
+                $0 update "${file%.*}"
+                echo "$file is updated"
+            done
+    done
+}
+
 # allow sync calls
 wait_status()
 {
@@ -320,6 +342,7 @@ case $1 in
         ;;
     foreground)
         check_start
+        module_watcher_fork
         post_waiter_fork
         exec_erl "$ERLANG_NODE" $EJABBERD_OPTS -noinput
         ;;
@@ -366,6 +389,9 @@ case $1 in
         ;;
     post_waiter)
         post_waiter_waiting
+        ;;
+    module_watcher)
+        module_watcher_loop
         ;;
     *)
         run_erl "$(uid ctl)" -hidden -noinput -boot start_clean \

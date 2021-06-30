@@ -216,3 +216,4 @@ modules:
   mod_site_license:
     vmeeting_api_token: {VMEETING_API_TOKEN}
     xmpp_domain: {XMPP_DOMAIN}
+  mod_conference_duration: {}
