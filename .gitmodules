@@ -1,3 +1,6 @@
 [submodule "ecs/ejabberd"]
 	path = ecs/ejabberd
 	url = git@github.com:vmeeting-io/ejabberd.git
+[submodule "ecs/xmpp"]
+	path = ecs/xmpp
+	url = git@github.com:vmeeting-io/xmpp.git

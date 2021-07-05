@@ -299,8 +299,8 @@ module_watcher_loop()
             while read path action file; do
                 echo "$action event is fired : $path$file"
                 bin/erlc -o lib/ejabberd-21.1.0/ebin -I lib/ejabberd-21.1.0/include ejabberd-modules/$file
-                $0 update "${file%.*}"
-                echo "$file is updated"
+                echo "$0 will be restarted"
+                $0 restart
             done
     done
 }

@@ -57,8 +57,7 @@
 	     [maxhistoryfetch | allowinvites | allowpm | contactjid |
 	      description | lang | ldapgroup | logs | roomname |
 	      occupants | subject | subjectmod | pubsub |
-	      changesubject | meetingId | userDeviceAccessDisabled | timeremained |
-		  created_timestamp]) -> [xdata_field()].
+	      changesubject | meetingId | userDeviceAccessDisabled | timeremained]) -> [xdata_field()].
 
 dec_int(Val) -> dec_int(Val, infinity, infinity).
 
@@ -203,8 +202,6 @@ encode(List, Lang, Required) ->
 						lists:member(userDeviceAccessDisabled, Required))];
 		{timeremained, Val} ->
 		[encode_timeremained(Val, Lang, lists:member(timeremained, Required))];
-		{created_timestamp, Val} ->
-		[encode_created_timestamp(Val, Lang, lists:member(created_timestamp, Required))];
 	    {ldapgroup, Val} ->
 		[encode_ldapgroup(Val, Lang,
 				  lists:member(ldapgroup, Required))];
@@ -510,35 +507,6 @@ do_decode([#xdata_field{var = <<"muc#roominfo_timeremained">>}
 	  XMLNS, _, _) ->
     erlang:error({?MODULE,
 		  {too_many_values, <<"muc#roominfo_timeremained">>, XMLNS}});
-
-do_decode([#xdata_field{var = <<"muc#roominfo_created_timestamp">>,
-			values = [Value]}
-	   | Fs],
-	  XMLNS, Required, Acc) ->
-    try dec_int(Value, -1, infinity) of
-      Result ->
-	  do_decode(Fs, XMLNS,
-		    lists:delete(<<"muc#roominfo_created_timestamp">>, Required),
-		    [{created_timestamp, Result} | Acc])
-    catch
-      _:_ ->
-	  erlang:error({?MODULE,
-			{bad_var_value, <<"muc#roominfo_created_timestamp">>, XMLNS}})
-    end;
-do_decode([#xdata_field{var = <<"muc#roominfo_created_timestamp">>,
-			values = []} =
-	       F
-	   | Fs],
-	  XMLNS, Required, Acc) ->
-    do_decode([F#xdata_field{var = <<"muc#roominfo_created_timestamp">>,
-			     values = [<<>>]}
-	       | Fs],
-	      XMLNS, Required, Acc);
-do_decode([#xdata_field{var = <<"muc#roominfo_created_timestamp">>}
-	   | _],
-	  XMLNS, _, _) ->
-    erlang:error({?MODULE,
-		  {too_many_values, <<"muc#roominfo_created_timestamp">>, XMLNS}});
 
 do_decode([#xdata_field{var =
 			    <<"muc#roominfo_ldapgroup">>,
@@ -967,24 +935,6 @@ encode_timeremained(Value, Lang,
 		 label =
 		     xmpp_tr:tr(Lang,
 				?T("timeremained)"))}.
-
--spec encode_created_timestamp(integer() |
-				       undefined,
-				       binary(), boolean()) -> xdata_field().
-
-encode_created_timestamp(Value, Lang,
-				  IsRequired) ->
-    Values = case Value of
-	       undefined -> [];
-	       Value -> [enc_int(Value)]
-	     end,
-    Opts = [],
-    #xdata_field{var = <<"created_timestamp">>,
-		 values = Values, required = IsRequired,
-		 type = 'text-single', options = Opts, desc = <<>>,
-		 label =
-		     xmpp_tr:tr(Lang,
-				?T("created_timestamp)"))}.
 
 -spec encode_ldapgroup(binary(), binary(),
 		       boolean()) -> xdata_field().
