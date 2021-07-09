@@ -38,6 +38,9 @@ append_host_config:
       mod_jwt_token:
         enable_jwt: true
         jwt_secret: "{JWT_SECRET}"
+      mod_muc_meeting_id: {}
+      mod_muc_domain_mapper: {}
+
 
 s2s_use_starttls: optional
 disable_sasl_mechanisms: ["X-OAUTH2"]
@@ -158,7 +161,6 @@ modules:
     hosts:
       - "internal-muc.{XMPP_DOMAIN}"
       - "muc.{XMPP_DOMAIN}"
-      - "muc.{DEFAULT_SITE_ID}.{XMPP_DOMAIN}"
     access:
       - allow
     access_admin:
@@ -218,7 +220,6 @@ modules:
   mod_version:
     show_os: false
   mod_participant_log: {}
-  mod_muc_meeting_id: {}
   mod_site_license:
     vmeeting_api_token: {VMEETING_API_TOKEN}
     xmpp_domain: {XMPP_DOMAIN}
