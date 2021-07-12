@@ -33,14 +33,18 @@ host_config:
     anonymous_protocol: both
 
 append_host_config:
-  {XMPP_DOMAIN}:
+  {MUC_DOMAIN}:
     modules:
       mod_jwt_token:
         enable_jwt: true
         jwt_secret: "{JWT_SECRET}"
       mod_muc_meeting_id: {}
-      mod_muc_domain_mapper: {}
-
+      mod_conference_duration: {}
+      mod_speakerstats: {}
+      mod_site_license:
+        vmeeting_api_token: b1222956f9294783bad8c99e59f1255d
+        xmpp_domain: devmeet.vmeeting.kr
+      mod_participant_log: {}
 
 s2s_use_starttls: optional
 disable_sasl_mechanisms: ["X-OAUTH2"]
@@ -149,7 +153,8 @@ modules:
   # mod_http_upload:
   #   put_url: https://@HOST@:5443/upload
   mod_last: {}
-  # mod_mam:
+  mod_mam:
+    default: always
   #   ## Mnesia is limited to 2GB, better to use an SQL backend
   #   ## For small servers SQLite is a good fit and is very easy
   #   ## to configure. Uncomment this when you have SQL configured:
@@ -219,9 +224,4 @@ modules:
   mod_vcard_xupdate: {}
   mod_version:
     show_os: false
-  mod_participant_log: {}
-  mod_site_license:
-    vmeeting_api_token: {VMEETING_API_TOKEN}
-    xmpp_domain: {XMPP_DOMAIN}
-  mod_conference_duration: {}
-  mod_speakerstats: {}
+  mod_muc_domain_mapper: {}
