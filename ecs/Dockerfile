@@ -105,7 +105,7 @@ RUN chmod a+x /entrypoint.sh
 # Complile mofified modules that are not in ejabberd source but in deps source
 RUN mkdir -p ebin/xmpp && \
     ./bin/erlc -o ebin/xmpp -I lib/ejabberd-21.1.0/include  modules/xmpp/*.erl && \
-    cp ebin/xmpp/*.beam lib/xmpp-1.5.2/ebin/
+    cp ebin/xmpp/*.beam lib/xmpp-1.5.3/ebin/
 
 RUN chown -R ejabberd:ejabberd /home/ejabberd
 
