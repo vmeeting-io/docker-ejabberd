@@ -34,7 +34,7 @@ host_config:
     anonymous_protocol: both
 
 append_host_config:
-  {MUC_DOMAIN}:
+  {XMPP_DOMAIN}:
     modules:
       mod_jwt_token:
         enable_jwt: true
@@ -46,10 +46,10 @@ append_host_config:
         vmeeting_api_token: b1222956f9294783bad8c99e59f1255d
         xmpp_domain: devmeet.vmeeting.kr
       mod_participant_log: {}
-  guest.{MUC_DOMAIN}:
+  guest.{XMPP_DOMAIN}:
     modules:
       mod_muc_lobby_rooms: {}
-  lobby.{MUC_DOMAIN}:
+  lobby.{XMPP_DOMAIN}:
     modules:
       mod_muc_lobby_rooms: {}
 
@@ -169,7 +169,6 @@ modules:
   #   default: never
   # mod_mqtt: {}
   mod_muc:
-    host: "{XMPP_MUC_DOMAIN}"
     hosts:
       - "internal-muc.{XMPP_DOMAIN}"
       - "muc.{XMPP_DOMAIN}"
