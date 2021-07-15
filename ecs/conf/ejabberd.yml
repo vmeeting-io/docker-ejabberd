@@ -46,6 +46,7 @@ append_host_config:
         vmeeting_api_token: b1222956f9294783bad8c99e59f1255d
         xmpp_domain: devmeet.vmeeting.kr
       mod_participant_log: {}
+      mod_muc_lobby_rooms: {}
   guest.{XMPP_DOMAIN}:
     modules:
       mod_muc_lobby_rooms: {}
