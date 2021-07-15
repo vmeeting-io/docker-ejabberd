@@ -4,6 +4,7 @@ hosts:
   - "auth.{XMPP_DOMAIN}"
   - "recorder.{XMPP_DOMAIN}"
   - "speakerstats.{XMPP_DOMAIN}"
+  - "lobby.{XMPP_DOMAIN}"
 
 loglevel: 4
 
@@ -45,6 +46,12 @@ append_host_config:
         vmeeting_api_token: b1222956f9294783bad8c99e59f1255d
         xmpp_domain: devmeet.vmeeting.kr
       mod_participant_log: {}
+  guest.{MUC_DOMAIN}:
+    modules:
+      mod_muc_lobby_rooms: {}
+  lobby.{MUC_DOMAIN}:
+    modules:
+      mod_muc_lobby_rooms: {}
 
 s2s_use_starttls: optional
 disable_sasl_mechanisms: ["X-OAUTH2"]
