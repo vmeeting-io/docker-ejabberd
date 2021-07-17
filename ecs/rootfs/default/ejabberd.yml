@@ -1,10 +1,9 @@
 hosts:
-  - "{XMPP_DOMAIN}"
-  - "guest.{XMPP_DOMAIN}"
-  - "auth.{XMPP_DOMAIN}"
-  - "recorder.{XMPP_DOMAIN}"
-  - "speakerstats.{XMPP_DOMAIN}"
-  - "lobby.{XMPP_DOMAIN}"
+  - "{{ .Env.XMPP_DOMAIN }}"
+  - "guest.{{ .Env.XMPP_DOMAIN }}"
+  - "auth.{{ .Env.XMPP_DOMAIN }}"
+  - "recorder.{{ .Env.XMPP_DOMAIN }}"
+  - "speakerstats.{{ .Env.XMPP_DOMAIN }}"
 
 loglevel: 4
 
@@ -14,45 +13,40 @@ certfiles:
 ca_file: "/home/ejabberd/conf/cacert.pem"
 
 host_config:
-  {XMPP_DOMAIN}:
+  {{ .Env.XMPP_DOMAIN }}:
     auth_method: [anonymous, internal]
     allow_multiple_connections: true
     anonymous_protocol: both
-  guest.{XMPP_DOMAIN}:
+  guest.{{ .Env.XMPP_DOMAIN }}:
     auth_method: anonymous
     allow_multiple_connections: true
     anonymous_protocol: both
-  auth.{XMPP_DOMAIN}:
+  auth.{{ .Env.XMPP_DOMAIN }}:
     auth_method: [internal]
     auth_password_format: scram
-  recorder.{XMPP_DOMAIN}:
+  recorder.{{ .Env.XMPP_DOMAIN }}:
     auth_method: [internal]
     auth_password_format: scram
-  speakerstats.{XMPP_DOMAIN}:
+  speakerstats.{{ .Env.XMPP_DOMAIN }}:
     auth_method: anonymous
     allow_multiple_connections: true
     anonymous_protocol: both
 
 append_host_config:
-  {XMPP_DOMAIN}:
+  {{ .Env.XMPP_DOMAIN }}:
     modules:
       mod_jwt_token:
         enable_jwt: true
-        jwt_secret: "{JWT_SECRET}"
+        jwt_secret: "{{ .Env.JWT_SECRET }}"
       mod_muc_meeting_id: {}
       mod_conference_duration: {}
       mod_speakerstats: {}
       mod_site_license:
-        vmeeting_api_token: b1222956f9294783bad8c99e59f1255d
-        xmpp_domain: devmeet.vmeeting.kr
+        vmeeting_api_token: {{ .Env.VMEETING_API_TOKEN }}
+        xmpp_domain: {{ .Env.XMPP_DOMAIN }}
       mod_participant_log: {}
-      mod_muc_lobby_rooms: {}
-  guest.{XMPP_DOMAIN}:
-    modules:
-      mod_muc_lobby_rooms: {}
-  lobby.{XMPP_DOMAIN}:
-    modules:
-      mod_muc_lobby_rooms: {}
+      mod_muc_lobby_rooms:
+        whitelist_domains: ["recorder.{{ .Env.XMPP_DOMAIN }}"]
 
 s2s_use_starttls: optional
 disable_sasl_mechanisms: ["X-OAUTH2"]
@@ -85,10 +79,10 @@ acl:
   admin:
     user:
       - "admin@localhost"
-      - "admin@xmpp.{XMPP_DOMAIN}"
-      - "admin@auth.{XMPP_DOMAIN}"
-      - "jvb@auth.{XMPP_DOMAIN}"
-      - "focus@auth.{XMPP_DOMAIN}"
+      - "admin@xmpp.{{ .Env.XMPP_DOMAIN }}"
+      - "admin@auth.{{ .Env.XMPP_DOMAIN }}"
+      - "jvb@auth.{{ .Env.XMPP_DOMAIN }}"
+      - "focus@auth.{{ .Env.XMPP_DOMAIN }}"
 
 access_rules:
   local:
@@ -161,8 +155,8 @@ modules:
   # mod_http_upload:
   #   put_url: https://@HOST@:5443/upload
   mod_last: {}
-  mod_mam:
-    default: always
+  # mod_mam:
+  #   default: always
   #   ## Mnesia is limited to 2GB, better to use an SQL backend
   #   ## For small servers SQLite is a good fit and is very easy
   #   ## to configure. Uncomment this when you have SQL configured:
@@ -171,8 +165,9 @@ modules:
   # mod_mqtt: {}
   mod_muc:
     hosts:
-      - "internal-muc.{XMPP_DOMAIN}"
-      - "muc.{XMPP_DOMAIN}"
+      - "internal-muc.{{ .Env.XMPP_DOMAIN }}"
+      - "muc.{{ .Env.XMPP_DOMAIN }}"
+      - "lobby.{{ .Env.XMPP_DOMAIN }}"
     access:
       - allow
     access_admin:
@@ -232,3 +227,4 @@ modules:
   mod_version:
     show_os: false
   mod_muc_domain_mapper: {}
+

@@ -99,6 +99,14 @@ VOLUME ["$HOME/database","$HOME/conf","$HOME/logs","$HOME/upload"]
 EXPOSE 1883 4369-4399 5222 5269 5280 5443
 
 # vmeeting setup
+
+#tpl templating
+ARG FREP_VERSION=1.3.11
+RUN wget -q https://github.com/subchen/frep/releases/download/v1.3.11/frep-1.3.11-linux-amd64 -O /usr/bin/frep && \
+    chmod +x /usr/bin/frep && \
+    echo 'exec frep $1:-' > /usr/bin/tpl && \
+    chmod +x /usr/bin/tpl
+
 COPY /rootfs/ /
 RUN chmod a+x /entrypoint.sh
 
@@ -110,9 +118,3 @@ RUN mkdir -p ebin/xmpp && \
 RUN chown -R ejabberd:ejabberd /home/ejabberd
 
 ENTRYPOINT ["/entrypoint.sh"]
-
-# RUN mkdir -p ebin/ejabberd && \
-#     ./bin/erlc -o ebin/ejabberd -I lib/ejabberd-21.1.0/include  modules/ejabberd/*.erl && cp ebin/ejabberd/*.beam lib/ejabberd-21.1.0/ebin/ && ./bin/ejabberdctl restart
-
-# RUN mkdir -p ebin/xmpp && \
-#     ./bin/erlc -o ebin/xmpp -I lib/ejabberd-21.1.0/include  modules/xmpp/*.erl && cp ebin/xmpp/*.beam lib/xmpp-1.5.2/ebin/ && ./bin/ejabberdctl restart

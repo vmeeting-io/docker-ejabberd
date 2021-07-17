@@ -22,23 +22,13 @@ function register_jitsi_users {
 }
 
 
-JWT_SECRET=$(echo -n "$JWT_APP_SECRET" | base64 | tr -d '\n')
-XMPP_MUC_DOMAIN_PREFIX=$(echo -n "$XMPP_MUC_DOMAIN" | sed '/\..*//')
+export JWT_SECRET=$(echo -n "$JWT_APP_SECRET" | base64 | tr -d '\n')
+export XMPP_MUC_DOMAIN_PREFIX=$(echo -n "$XMPP_MUC_DOMAIN" | sed '/\..*//')
 
-# substitute variables in ejabberd.yml
-sed -i \
-    -e "s/{XMPP_DOMAIN}/$XMPP_DOMAIN/g" \
-    -e "s/{XMPP_MUC_DOMAIN}/$XMPP_MUC_DOMAIN/g" \
-    -e "s/{XMPP_MUC_DOMAIN_PREFIX}/$XMPP_MUC_DOMAIN_PREFIX/g" \
-    -e "s/{JWT_SECRET}/$JWT_SECRET/g" \
-    -e "s/{JICOFO_COMPONENT_SECRET}/$JICOFO_COMPONENT_SECRET/g" \
-    -e "s/{DEFAULT_SITE_ID}/$DEFAULT_SITE_ID/g" \
-    -e "s/{VMEETING_API_TOKEN}/$VMEETING_API_TOKEN/g" \
-    /home/ejabberd/conf/ejabberd.yml
+tpl /default/ejabberd.yml > /home/ejabberd/conf/ejabberd.yml
 
 # for debugging
 cat /home/ejabberd/conf/ejabberd.yml
-
 
 # need to run at background for ejabberd to start to run
 register_jitsi_users &
