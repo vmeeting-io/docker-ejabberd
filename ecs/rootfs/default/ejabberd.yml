@@ -144,7 +144,7 @@ modules:
     access: announce
   mod_avatar: {}
   mod_blocking: {}
-  # mod_bosh: {}
+  mod_bosh: {}
   mod_caps: {}
   mod_carboncopy: {}
   mod_client_state: {}
