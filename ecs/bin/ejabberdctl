@@ -298,9 +298,7 @@ module_watcher_loop()
         inotifywait -e modify,create ejabberd-modules |
             while read path action file; do
                 echo "$action event is fired : $path$file"
-                bin/erlc -o lib/ejabberd-21.1.0/ebin -I lib/ejabberd-21.1.0/include ejabberd-modules/$file
-                echo "$0 will be restarted"
-                $0 restart
+                bin/erlc -o lib/ejabberd-21.1.0/ebin -I lib/ejabberd-21.1.0/include ejabberd-modules/$file && echo "$0 will be restarted" && $0 restart
             done
     done
 }
