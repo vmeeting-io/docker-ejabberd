@@ -294,11 +294,17 @@ module_watcher_loop()
 {
     echo "module watcher started"
     cd /home/ejabberd
+    EJABBERD_DIR=$(find lib/ejabberd* -maxdepth 0)
+    XMPP_DIR=$(find lib/xmpp* -maxdepth 0)
     while [ 1 ]; do
-        inotifywait -e modify,create ejabberd-modules |
+        inotifywait -r -e modify,create modules |
             while read path action file; do
-                echo "$action event is fired : $path$file"
-                bin/erlc -o lib/ejabberd-21.1.0/ebin -I lib/ejabberd-21.1.0/include ejabberd-modules/$file && echo "$0 will be restarted" && $0 restart
+                # remove last / if exist
+                # example: modules/xmpp/ -> xmpp
+                MODULE_DIR=$(echo $path | awk -F '/' '{ print $2 }')
+                TARGET_DIR=$(find lib/${MODULE_DIR}* -maxdepth 0)
+                echo "$action event is fired : $path $file. Target dir is $TARGET_DIR"
+                bin/erlc -o $TARGET_DIR/ebin -I $TARGET_DIR/include modules/$MODULE_DIR/$file && echo "$0 will be restarted" && $0 restart
             done
     done
 }
