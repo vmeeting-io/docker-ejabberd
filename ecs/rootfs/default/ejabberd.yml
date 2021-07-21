@@ -66,6 +66,7 @@ listen:
     tls: false
     request_handlers:
       "/xmpp-websocket": ejabberd_http_ws
+      "/http-bind": mod_bosh
       "/conferences": mod_site_license
 
 acl:
