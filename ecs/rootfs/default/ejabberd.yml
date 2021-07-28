@@ -39,11 +39,11 @@ append_host_config:
         enable_jwt: true
         jwt_secret: "{{ .Env.JWT_SECRET }}"
       mod_muc_meeting_id: {}
-      mod_conference_duration: {}
       mod_speakerstats: {}
       mod_site_license:
         vmeeting_api_token: {{ .Env.VMEETING_API_TOKEN }}
         xmpp_domain: {{ .Env.XMPP_DOMAIN }}
+      mod_conference_duration: {}
       mod_participant_log: {}
       mod_muc_lobby_rooms:
         whitelist_domains: ["recorder.{{ .Env.XMPP_DOMAIN }}"]
