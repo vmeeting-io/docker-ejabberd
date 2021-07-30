@@ -44,7 +44,6 @@ append_host_config:
         vmeeting_api_token: {{ .Env.VMEETING_API_TOKEN }}
         xmpp_domain: {{ .Env.XMPP_DOMAIN }}
       mod_conference_duration: {}
-      mod_participant_log: {}
       mod_muc_lobby_rooms:
         whitelist_domains: ["recorder.{{ .Env.XMPP_DOMAIN }}"]
 
@@ -167,7 +166,7 @@ modules:
   mod_muc:
     hosts:
       - "internal-muc.{{ .Env.XMPP_DOMAIN }}"
-      - "muc.{{ .Env.XMPP_DOMAIN }}"
+      - "{{ .Env.XMPP_MUC_DOMAIN }}"
       - "lobby.{{ .Env.XMPP_DOMAIN }}"
     access:
       - allow
@@ -228,4 +227,5 @@ modules:
   mod_version:
     show_os: false
   mod_muc_domain_mapper: {}
-
+  mod_participant_log:
+    muc_host: "{{ .Env.XMPP_MUC_DOMAIN }}"
