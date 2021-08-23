@@ -230,4 +230,4 @@ modules:
   mod_muc_domain_mapper: {}
   mod_participant_log:
     muc_host: "{{ .Env.XMPP_MUC_DOMAIN }}"
-  mod_poll: {}
+  mod_polls: {}
