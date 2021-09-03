@@ -39,6 +39,7 @@ append_host_config:
         enable_jwt: true
         jwt_secret: "{{ .Env.JWT_SECRET }}"
       mod_muc_meeting_id: {}
+      mod_participant_log: {}
       mod_speakerstats: {}
       mod_site_license:
         vmeeting_api_token: {{ .Env.VMEETING_API_TOKEN }}
@@ -47,6 +48,9 @@ append_host_config:
       mod_muc_lobby_rooms:
         whitelist_domains: ["recorder.{{ .Env.XMPP_DOMAIN }}"]
       mod_jibri_pass: {}
+      mod_muc_breakout_rooms: {}
+        breakout_room_muc: "breakout.{{ .Env.XMPP_DOMAIN }}"
+      mod_polls: {}
 
 s2s_use_starttls: optional
 disable_sasl_mechanisms: ["X-OAUTH2"]
@@ -169,6 +173,7 @@ modules:
       - "{{ .Env.XMPP_MUC_DOMAIN }}"
       - "internal-muc.{{ .Env.XMPP_DOMAIN }}"
       - "lobby.{{ .Env.XMPP_DOMAIN }}"
+      - "breakout.{{ .Env.XMPP_DOMAIN }}"
     access:
       - allow
     access_admin:
@@ -228,6 +233,3 @@ modules:
   mod_version:
     show_os: false
   mod_muc_domain_mapper: {}
-  mod_participant_log:
-    muc_host: "{{ .Env.XMPP_MUC_DOMAIN }}"
-  mod_polls: {}
