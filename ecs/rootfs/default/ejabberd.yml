@@ -49,7 +49,6 @@ append_host_config:
         whitelist_domains: ["recorder.{{ .Env.XMPP_DOMAIN }}"]
       mod_jibri_pass: {}
       mod_muc_breakout_rooms: {}
-        breakout_room_muc: "breakout.{{ .Env.XMPP_DOMAIN }}"
       mod_polls: {}
 
 s2s_use_starttls: optional
