@@ -10,6 +10,9 @@ function register_jitsi_users {
         sleep 1
     done
 
+    # wait for ejabberd to fully start
+    sleep 2
+
     cd /home/ejabberd/bin
     ./ejabberdctl unregister jvb auth.$XMPP_DOMAIN
     ./ejabberdctl register jvb auth.$XMPP_DOMAIN $JVB_AUTH_PASSWORD
