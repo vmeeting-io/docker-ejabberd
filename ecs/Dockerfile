@@ -92,7 +92,9 @@ COPY --from=builder /ejabberd/runtime .
 COPY bin/* bin/
 RUN chmod 755 bin/ejabberdctl bin/ejabberdapi bin/erl
 COPY --chown=ejabberd:ejabberd conf conf/
-ADD --chown=ejabberd:ejabberd https://download.process-one.net/cacert.pem conf/cacert.pem
+RUN wget --no-check-certificate https://download.process-one.net/cacert.pem && \
+    mv cacert.pem conf/cacert.pem && \
+    chown ejabberd:ejabberd conf/cacert.pem
 
 # Setup runtime environment
 VOLUME ["$HOME/database","$HOME/conf","$HOME/logs","$HOME/upload"]
