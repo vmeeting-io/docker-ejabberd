@@ -48,8 +48,9 @@ append_host_config:
       mod_muc_lobby_rooms:
         whitelist_domains: ["recorder.{{ .Env.XMPP_DOMAIN }}"]
       mod_jibri_pass: {}
-      # mod_muc_breakout_rooms: {}
+      mod_muc_breakout_rooms: {}
       mod_polls: {}
+      mod_av_moderation: {}
 
 s2s_use_starttls: optional
 disable_sasl_mechanisms: ["X-OAUTH2"]
@@ -173,6 +174,7 @@ modules:
       - "internal-muc.{{ .Env.XMPP_DOMAIN }}"
       - "lobby.{{ .Env.XMPP_DOMAIN }}"
       - "breakout.{{ .Env.XMPP_DOMAIN }}"
+      - "avmoderation.{{ .Env.XMPP_DOMAIN }}"
     access:
       - allow
     access_admin:
