@@ -172,6 +172,7 @@ modules:
     hosts:
       - "{{ .Env.XMPP_MUC_DOMAIN }}"
       - "internal-muc.{{ .Env.XMPP_DOMAIN }}"
+      - "conferenceduration.{{ .Env.XMPP_DOMAIN }}"
       - "lobby.{{ .Env.XMPP_DOMAIN }}"
       - "breakout.{{ .Env.XMPP_DOMAIN }}"
       - "avmoderation.{{ .Env.XMPP_DOMAIN }}"
