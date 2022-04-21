@@ -1,3 +1,4 @@
+{{ $ENABLE_BREAKOUT_ROOMS := .Env.ENABLE_BREAKOUT_ROOMS | default "true" | toBool }}
 hosts:
   - "{{ .Env.XMPP_DOMAIN }}"
   - "guest.{{ .Env.XMPP_DOMAIN }}"
@@ -48,8 +49,11 @@ append_host_config:
       mod_muc_lobby_rooms:
         whitelist_domains: ["recorder.{{ .Env.XMPP_DOMAIN }}"]
       mod_jibri_pass: {}
-      # mod_muc_breakout_rooms: {}
+{{ if $ENABLE_BREAKOUT_ROOMS }}
+      mod_muc_breakout_rooms: {}
+{{ end }}
       mod_polls: {}
+      mod_av_moderation: {}
 
 s2s_use_starttls: optional
 disable_sasl_mechanisms: ["X-OAUTH2"]
@@ -171,8 +175,12 @@ modules:
     hosts:
       - "{{ .Env.XMPP_MUC_DOMAIN }}"
       - "internal-muc.{{ .Env.XMPP_DOMAIN }}"
+      - "conferenceduration.{{ .Env.XMPP_DOMAIN }}"
       - "lobby.{{ .Env.XMPP_DOMAIN }}"
+{{ if $ENABLE_BREAKOUT_ROOMS }}
       - "breakout.{{ .Env.XMPP_DOMAIN }}"
+{{ end }}
+      - "avmoderation.{{ .Env.XMPP_DOMAIN }}"
     access:
       - allow
     access_admin:
