@@ -1,5 +1,5 @@
 FROM alpine:3.11
-LABEL maintainer="ProcessOne <contact@process-one.net>" \
+LABEL maintainer="KeduTech <vmeeting-info@kedutech.kr>" \
       product="Ejabberd mix development environment"
 
 # Install required dependencies
