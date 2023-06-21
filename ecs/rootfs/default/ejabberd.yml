@@ -1,4 +1,5 @@
 {{ $ENABLE_BREAKOUT_ROOMS := .Env.ENABLE_BREAKOUT_ROOMS | default "true" | toBool }}
+{{ $ENABLE_LOBBY := .Env.AUTO_LOBBY_ENABLED | default "false" | toBool }}
 hosts:
   - "{{ .Env.XMPP_DOMAIN }}"
   - "guest.{{ .Env.XMPP_DOMAIN }}"
@@ -198,6 +199,10 @@ modules:
       allow_change_subj: true
       allow_private_messages: true
       members_by_default: true
+{{ if $ENABLE_LOBBY }}
+      members_only: true
+{{ end }}
+
   mod_muc_admin: {}
   # mod_muc_log: {}
   # mod_offline:
