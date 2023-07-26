@@ -48,7 +48,7 @@ append_host_config:
         xmpp_domain: {{ .Env.XMPP_DOMAIN }}
       mod_conference_duration: {}
       mod_muc_lobby_rooms:
-        whitelist_domains: ["recorder.{{ .Env.XMPP_DOMAIN }}"]
+        whitelist_domains: ["recorder.{{ .Env.XMPP_DOMAIN }}", "internal-muc.{{ .Env.XMPP_DOMAIN }}"]
       mod_jibri_pass: {}
 {{ if $ENABLE_BREAKOUT_ROOMS }}
       mod_muc_breakout_rooms: {}
