@@ -115,5 +115,4 @@ RUN chmod a+x /entrypoint.sh
 RUN chown -R ejabberd:ejabberd /home/ejabberd
 USER ejabberd
 
-USER ejabberd
 ENTRYPOINT ["/entrypoint.sh"]
