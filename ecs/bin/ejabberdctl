@@ -78,7 +78,7 @@ done
 }
 
 # define erl parameters
-ERLANG_OPTS="+K $POLL -smp $SMP +P $ERL_PROCESSES $ERL_OPTIONS"
+ERLANG_OPTS="-boot_var RELEASE_LIB ../lib +K $POLL -smp $SMP +P $ERL_PROCESSES $ERL_OPTIONS"
 if [ -n "$FIREWALL_WINDOW" ] ; then
     ERLANG_OPTS="$ERLANG_OPTS -kernel inet_dist_listen_min ${FIREWALL_WINDOW%-*} inet_dist_listen_max ${FIREWALL_WINDOW#*-}"
 fi
@@ -166,8 +166,8 @@ debugwarning()
         echo "Please be extremely cautious with your actions,"
         echo "and exit immediately if you are not completely sure."
         echo ""
-        echo "To detach this shell from ejabberd, press:"
-        echo "  control+c, control+c"
+        echo "To exit and detach this shell from ejabberd, press:"
+        echo "  control+g and then q"
         echo ""
         echo "--------------------------------------------------------------------"
         echo "To bypass permanently this warning, add to ejabberdctl.cfg the line:"
@@ -189,8 +189,8 @@ livewarning()
         echo "Please be extremely cautious with your actions,"
         echo "and exit immediately if you are not completely sure."
         echo ""
-        echo "To exit this LIVE mode and stop ejabberd, press:"
-        echo "  q().  and press the Enter key"
+        echo "To exit and detach this shell from ejabberd, press:"
+        echo "  control+g and then q"
         echo ""
         echo "--------------------------------------------------------------------"
         echo "To bypass permanently this warning, add to ejabberdctl.cfg the line:"
@@ -205,12 +205,18 @@ help()
 {
     echo ""
     echo "Commands to start an ejabberd node:"
-    echo "  start      Start an ejabberd node in server mode"
-    echo "  debug      Attach an interactive Erlang shell to a running ejabberd node"
-    echo "  iexdebug   Attach an interactive Elixir shell to a running ejabberd node"
-    echo "  live       Start an ejabberd node in live (interactive) mode"
-    echo "  iexlive    Start an ejabberd node in live (interactive) mode, within an Elixir shell"
-    echo "  foreground Start an ejabberd node in server mode (attached)"
+    echo "  start            Start in server mode"
+    echo "  foreground       Start in server mode (attached)"
+    echo "  foreground-quiet Start in server mode (attached), show only critical messages"
+    echo "  live             Start in interactive mode, with Erlang shell"
+    echo "  iexlive          Start in interactive mode, with Elixir shell"
+    echo ""
+    echo "Commands to interact with a running ejabberd node:"
+    echo "  debug            Attach an interactive Erlang shell to a running node"
+    echo "  iexdebug         Attach an interactive Elixir shell to a running node"
+    echo "  etop             Attach to a running node and start Erlang Top"
+    echo "  ping             Send ping to the node, returns pong or pang"
+    echo "  started|stopped  Wait for the node to fully start|stop"
     echo ""
     echo "Optional parameters when starting an ejabberd node:"
     echo "  --config-dir dir   Config ejabberd:    $ETC_DIR"
@@ -278,8 +284,19 @@ post_waiter_loop()
     LIST=$@
     HEAD=${LIST%% ; *}
     TAIL=${LIST#* ; }
-    echo ":> ejabberdctl $HEAD"
-    $0 $HEAD
+    HEAD2=${HEAD#\! *}
+    echo ":> ejabberdctl $HEAD2"
+    $0 $HEAD2
+    ctlstatus=$?
+    if [ $ctlstatus -ne 0 ] ; then
+        if [ "$HEAD" != "$HEAD2" ] ; then
+            echo ":> FAILURE in command '$HEAD2' !!! Ignoring result"
+        else
+            echo ":> FAILURE in command '$HEAD' !!! Stopping ejabberd..."
+            $0 halt > /dev/null
+            exit $ctlstatus
+        fi
+    fi
     [ "$HEAD" = "$TAIL" ] || post_waiter_loop $TAIL
 }
 

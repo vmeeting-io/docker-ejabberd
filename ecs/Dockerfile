@@ -1,3 +1,8 @@
+FROM docker.io/golang:1.20-alpine AS api
+RUN go install -v \
+    github.com/processone/ejabberd-api/cmd/ejabberd@master \
+    && mv bin/ejabberd bin/ejabberdapi
+
 FROM theun/mix as builder
 ARG VERSION
 ENV VERSION=${VERSION:-latest} \
@@ -9,24 +14,26 @@ LABEL maintainer="ProcessOne <contact@process-one.net>" \
 COPY ejabberd /ejabberd
 WORKDIR /ejabberd
 COPY vars.config .
+RUN echo '{vsn, "'${VERSION}'.0"}.' >>vars.config
+COPY config.exs config/
 COPY rel/*exs rel/
-# RUN mix deps.update --all && cat mix.lock
 RUN mix deps.get \
     && (cd deps/eimp; ./configure)
 
 # Compile
-RUN mix do compile, distillery.init, distillery.release --env=prod
+RUN MIX_ENV=prod mix release
 
 # Prepare runtime environment
 RUN mkdir runtime \
-    && tar -C runtime -zxf _build/prod/rel/ejabberd/releases/*/ejabberd.tar.gz \
+    && tar -C runtime -zxf _build/prod/ejabberd-*.tar.gz \
     && cd runtime \
     && cp releases/*/start.boot bin \
-    && echo 'beam_lib:strip_files(filelib:wildcard("lib/*/ebin/*beam")), init:stop().' | erts*/bin/erl -boot start_clean >/dev/null \
+    && cp releases/*/start_clean.boot bin \
+    && echo 'beam_lib:strip_files(filelib:wildcard("lib/*/ebin/*beam")), init:stop().' | erl >/dev/null \
     && mv erts*/bin/* bin \
     && EJABBERD_VERSION=`(cd releases; ls -1 -d *.*.*)` \
-    && rm -rf releases erts* bin/*src bin/dialyzer bin/typer \
-    && rm bin/ejabberd bin/ejabberd.bat \
+    && rm -rf releases erts* bin/*src bin/dialyzer bin/typer etc \
+    && rm bin/ejabberd \
     && mkdir lib/ejabberd-$EJABBERD_VERSION/priv/bin \
     && cp /usr/lib/elixir/bin/* bin/ \
     && sed -i 's|ERL_EXEC="erl"|ERL_EXEC="/home/ejabberd/bin/erl"|' bin/elixir \
@@ -34,7 +41,7 @@ RUN mkdir runtime \
     && cp -r /ejabberd/sql lib/ejabberd-*/priv
 
 # Runtime container
-FROM alpine:3.11
+FROM alpine:3.19
 ARG VERSION
 ARG VCS_REF
 ARG BUILD_DATE
@@ -65,7 +72,7 @@ RUN addgroup ejabberd -g 9000 \
     && chown -R ejabberd:ejabberd /home/ejabberd
 
 # Install required dependencies
-RUN apk upgrade --update musl \
+RUN apk upgrade --update-cache --no-progress \
     && apk add \
     expat \
     freetds \
@@ -80,6 +87,7 @@ RUN apk upgrade --update musl \
     openssl \
     sqlite \
     sqlite-libs \
+    tini \
     unixodbc \
     yaml \
     zlib \
@@ -90,21 +98,21 @@ RUN apk upgrade --update musl \
 WORKDIR $HOME
 COPY --from=builder /ejabberd/runtime .
 COPY bin/* bin/
+COPY --from=api /go/bin/ejabberdapi bin/ejabberdapi
 RUN chmod 755 bin/ejabberdctl bin/ejabberdapi bin/erl
 COPY --chown=ejabberd:ejabberd conf conf/
-# RUN wget --no-check-certificate https://download.process-one.net/cacert.pem && \
-#     mv cacert.pem conf/cacert.pem && \
-#     chown ejabberd:ejabberd conf/cacert.pem
+ADD --chown=ejabberd:ejabberd https://download.process-one.net/cacert.pem conf/cacert.pem
 
 # Setup runtime environment
+USER ejabberd
 VOLUME ["$HOME/database","$HOME/conf","$HOME/logs","$HOME/upload"]
 EXPOSE 1883 4369-4399 5222 5269 5280 5443
 
 # vmeeting setup
 
 #tpl templating
-ARG FREP_VERSION=1.3.11
-RUN wget -q https://github.com/subchen/frep/releases/download/v1.3.11/frep-1.3.11-linux-amd64 -O /usr/bin/frep && \
+ARG FREP_VERSION=1.3.13
+RUN wget -q https://github.com/subchen/frep/releases/download/v1.3.13/frep-1.3.13-linux-amd64 -O /usr/bin/frep && \
     chmod +x /usr/bin/frep && \
     echo 'exec frep $1:-' > /usr/bin/tpl && \
     chmod +x /usr/bin/tpl
