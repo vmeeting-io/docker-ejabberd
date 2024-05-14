@@ -8,7 +8,7 @@ ERL_PROCESSES=250000
 ERL_MAX_ETS_TABLES=1400
 FIREWALL_WINDOW="4370-4379"
 INET_DIST_INTERFACE=""
-ERLANG_NODE=ejabberd@$(hostname -s)
+ERLANG_NODE=ejabberd@localhost
 EJABBERD_BYPASS_WARNINGS=true
 
 # define default environment variables
@@ -320,8 +320,8 @@ module_watcher_loop()
                 # example: modules/xmpp/ -> xmpp
                 MODULE_DIR=$(echo $path | awk -F '/' '{ print $2 }')
                 TARGET_DIR=$(find lib/${MODULE_DIR}* -maxdepth 0)
-                echo "$action event is fired : $path $file. Target dir is $TARGET_DIR"
-                bin/erlc -o $TARGET_DIR/ebin -I $TARGET_DIR/include modules/$MODULE_DIR/$file && echo "$0 will be restarted" && $0 restart
+                echo "$action event is fired : $path/$file. Target dir is $TARGET_DIR"
+                $0 compile $HOME/modules/$MODULE_DIR/$file && echo "$0 will be restarted" && $0 restart
             done
     done
 }

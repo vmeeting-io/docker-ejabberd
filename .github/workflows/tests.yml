@@ -2,44 +2,193 @@ name: Tests
 
 on:
   push:
-    paths-ignore:
-      - '**.md'
-      - '**.bat'
+    paths:
+      - '.github/workflows/tests.yml'
+      - 'ecs/**'
+      - 'mix/**'
   pull_request:
-    paths-ignore:
-      - '**.md'
-      - '**.bat'
+    paths:
+      - '.github/workflows/tests.yml'
+      - 'ecs/**'
+      - 'mix/**'
+
+env:
+  REGISTRY_GHCR: ghcr.io
+  REGISTRY_LOCAL: localhost:5000
+  REGISTRY_DOCKER: docker.io
+  MIX_IMAGENAME_GHCR: ${{ github.repository_owner }}/mix
+  ECS_IMAGENAME_GHCR: ${{ github.repository_owner }}/ecs
+  MIX_IMAGENAME_DOCKERHUB: ejabberd/mix
+  ECS_IMAGENAME_DOCKERHUB: ejabberd/ecs
 
 jobs:
+
   build:
     name: Build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: true
       max-parallel: 1
+    permissions:
+      packages: write
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
 
-      - name: Build ecs image
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY_GHCR }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get git describe
+        id: gitdescribe
+        run: echo "ver=$(git describe --tags --exact-match 2>/dev/null || echo latest)" >> $GITHUB_OUTPUT
+
+      - name: Extract mix metadata (tags, labels)
+        id: mixmeta
+        if: github.ref_type == 'tag'
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY_GHCR }}/${{ env.MIX_IMAGENAME_GHCR }}
+            ${{ env.REGISTRY_DOCKER }}/${{ env.MIX_IMAGENAME_DOCKERHUB }}
+          labels: |
+            org.opencontainers.image.revision=${{ steps.gitdescribe.outputs.ver }}
+            org.opencontainers.image.licenses=GPL-2.0
+            org.opencontainers.image.vendor=ProcessOne
+
+      - name: Extract ecs metadata (tags, labels)
+        id: ecsmeta
+        if: github.ref_type == 'tag'
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.REGISTRY_GHCR }}/${{ env.ECS_IMAGENAME_GHCR }}
+            ${{ env.REGISTRY_DOCKER }}/${{ env.ECS_IMAGENAME_DOCKERHUB }}
+          labels: |
+            org.opencontainers.image.revision=${{ steps.gitdescribe.outputs.ver }}
+            org.opencontainers.image.licenses=GPL-2.0
+            org.opencontainers.image.vendor=ProcessOne
+
+      - name: Prepare local tags
+        id: localreg
         run: |
-            cd ecs
-            ./build.sh
+          tag="$(echo ${{ github.ref_name }} | sed -e 's|[/]\+|-|g')"
+          echo "mixlocaltag=${{ env.REGISTRY_LOCAL }}/${{ env.MIX_IMAGENAME_GHCR }}:$tag" >> $GITHUB_OUTPUT
+          echo "ecslocaltag=${{ env.REGISTRY_LOCAL }}/${{ env.ECS_IMAGENAME_GHCR }}:$tag" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: network=host
+
+      - name: Build and push local mix image
+        uses: docker/build-push-action@v5
+        with:
+          build-args: |
+            VERSION=${{ steps.gitdescribe.outputs.ver }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          context: mix
+          labels: ${{ steps.mixmeta.outputs.labels }}
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.localreg.outputs.mixlocaltag }}
+
+      - name: Prepare ecs Dockerfile
+        run: sed -i 's|ejabberd/mix|${{ steps.localreg.outputs.mixlocaltag }}|g' ecs/Dockerfile
+
+      - name: Build and push local ecs image
+        uses: docker/build-push-action@v5
+        with:
+          build-args: |
+            VERSION=${{ steps.gitdescribe.outputs.ver }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          context: ecs
+          labels: ${{ steps.ecsmeta.outputs.labels }}
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.localreg.outputs.ecslocaltag }}
 
       - name: Run ecs image
         run: |
             docker images
-            docker run --name ejabberd -d -p 5222:5222 ejabberd/ecs:latest
+            docker run --name ejabberd -d -p 5222:5222 ${{ steps.localreg.outputs.ecslocaltag }}
 
       - name: Wait ejabberd started
         run: |
             docker exec ejabberd bin/ejabberdctl started
 
       - name: Check ecs results
+        if: always()
         run: |
             docker ps -s
             docker logs ejabberd
             docker logs ejabberd | grep -q "Start accepting TCP connections" || exit 1
             docker logs ejabberd | grep -q "error" && exit 1 || exit 0
             docker logs ejabberd | grep -q "Error" && exit 1 || exit 0
+
+      - name: Save image
+        run: |
+            docker image save ${{ steps.localreg.outputs.ecslocaltag }} --output ejabberd-latest.tar
+
+      - name: Upload image
+        uses: actions/upload-artifact@v4
+        with:
+          name: ejabberd-image
+          path: ejabberd-latest.tar
+
+      - run: |
+          echo "::notice::To get this image, download ejabberd-image.zip, "\
+                         "uncompress it and run: " \
+                         "docker image load -i ejabberd-latest.tar"
+
+      - name: Build and push mix image
+        uses: docker/build-push-action@v5
+        if: github.ref_type == 'tag'
+        with:
+          build-args: |
+            VERSION=${{ steps.gitdescribe.outputs.ver }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          context: mix
+          labels: ${{ steps.mixmeta.outputs.labels }}
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.mixmeta.outputs.tags }}
+
+      - name: Build and push ecs image
+        uses: docker/build-push-action@v5
+        if: github.ref_type == 'tag'
+        with:
+          build-args: |
+            VERSION=${{ steps.gitdescribe.outputs.ver }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          context: ecs
+          labels: ${{ steps.ecsmeta.outputs.labels }}
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ steps.ecsmeta.outputs.tags }}

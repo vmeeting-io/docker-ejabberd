@@ -31,10 +31,10 @@ export XMPP_MUC_DOMAIN_PREFIX=$(echo -n "$XMPP_MUC_DOMAIN" | sed '/\..*//')
 tpl /default/ejabberd.yml > /home/ejabberd/conf/ejabberd.yml
 
 # for debugging
-cat /home/ejabberd/conf/ejabberd.yml
+# cat /home/ejabberd/conf/ejabberd.yml
 
 # need to run at background for ejabberd to start to run
 register_jitsi_users &
 
 # start ejabberd entrypoint
-/home/ejabberd/bin/ejabberdctl foreground "$@"
+/sbin/tini -- /home/ejabberd/bin/ejabberdctl foreground "$@"

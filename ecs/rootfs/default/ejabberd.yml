@@ -16,7 +16,7 @@ ca_file: "/home/ejabberd/conf/cacert.pem"
 
 host_config:
   {{ .Env.XMPP_DOMAIN }}:
-    auth_method: [anonymous, internal]
+    auth_method: [jwt, anonymous, internal]
     allow_multiple_connections: true
     anonymous_protocol: both
   guest.{{ .Env.XMPP_DOMAIN }}:
@@ -197,7 +197,7 @@ modules:
       allow_user_invites: true
       mam: false
       allow_change_subj: true
-      allow_private_messages: true
+      allowpm: participants
       members_by_default: true
 {{ if $ENABLE_LOBBY }}
       members_only: true

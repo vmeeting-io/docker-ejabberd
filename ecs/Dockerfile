@@ -3,7 +3,7 @@ RUN go install -v \
     github.com/processone/ejabberd-api/cmd/ejabberd@master \
     && mv bin/ejabberd bin/ejabberdapi
 
-FROM theun/mix as builder
+FROM theun/mix:latest as builder
 ARG VERSION
 ENV VERSION=${VERSION:-latest} \
     MIX_ENV=prod
@@ -104,7 +104,6 @@ COPY --chown=ejabberd:ejabberd conf conf/
 ADD --chown=ejabberd:ejabberd https://download.process-one.net/cacert.pem conf/cacert.pem
 
 # Setup runtime environment
-USER ejabberd
 VOLUME ["$HOME/database","$HOME/conf","$HOME/logs","$HOME/upload"]
 EXPOSE 1883 4369-4399 5222 5269 5280 5443
 
