@@ -22,6 +22,8 @@ function register_jitsi_users {
     ./ejabberdctl register focus auth.$XMPP_DOMAIN $JICOFO_AUTH_PASSWORD
     ./ejabberdctl unregister recorder recorder.$XMPP_DOMAIN
     ./ejabberdctl register recorder recorder.$XMPP_DOMAIN $JIBRI_RECORDER_PASSWORD
+    ./ejabberdctl unregister jigasi auth.$XMPP_DOMAIN
+    ./ejabberdctl register jigasi auth.$XMPP_DOMAIN $JIGASI_XMPP_PASSWORD
 }
 
 

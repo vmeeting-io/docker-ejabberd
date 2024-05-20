@@ -5,6 +5,7 @@ hosts:
   - "guest.{{ .Env.XMPP_DOMAIN }}"
   - "auth.{{ .Env.XMPP_DOMAIN }}"
   - "recorder.{{ .Env.XMPP_DOMAIN }}"
+  - "jigasi.{{ .Env.XMPP_DOMAIN }}"
   - "speakerstats.{{ .Env.XMPP_DOMAIN }}"
 
 loglevel: 4
