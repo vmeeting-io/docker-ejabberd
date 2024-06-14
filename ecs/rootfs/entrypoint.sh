@@ -6,7 +6,7 @@ set -x
 
 function register_jitsi_users {
     echo "Wait for ejabberd to be ready..."
-    while ! nc -z localhost 5222; do
+    while ! nc -z 0.0.0.0 5222; do
         sleep 1
     done
 
@@ -28,7 +28,7 @@ function register_jitsi_users {
 
 
 export JWT_SECRET=$(echo -n "$JWT_APP_SECRET" | base64 | tr -d '\n')
-export XMPP_MUC_DOMAIN_PREFIX=$(echo -n "$XMPP_MUC_DOMAIN" | sed '/\..*//')
+export XMPP_MUC_DOMAIN_PREFIX=$(echo -n "$XMPP_MUC_DOMAIN" | sed 's/\..*//')
 
 tpl /default/ejabberd.yml > /home/ejabberd/conf/ejabberd.yml
 
@@ -39,4 +39,4 @@ tpl /default/ejabberd.yml > /home/ejabberd/conf/ejabberd.yml
 register_jitsi_users &
 
 # start ejabberd entrypoint
-/sbin/tini -- /home/ejabberd/bin/ejabberdctl foreground "$@"
+/sbin/tini -s /home/ejabberd/bin/ejabberdctl foreground "$@"

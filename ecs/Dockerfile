@@ -1,7 +1,7 @@
 FROM docker.io/golang:1.20-alpine AS api
-RUN go install -v \
-    github.com/processone/ejabberd-api/cmd/ejabberd@master \
-    && mv bin/ejabberd bin/ejabberdapi
+# RUN go install -v \
+#     github.com/processone/ejabberd-api/cmd/ejabberd@master \
+#     && mv bin/ejabberd bin/ejabberdapi
 
 FROM theun/mix:latest as builder
 ARG VERSION
@@ -98,8 +98,9 @@ RUN apk upgrade --update-cache --no-progress \
 WORKDIR $HOME
 COPY --from=builder /ejabberd/runtime .
 COPY bin/* bin/
-COPY --from=api /go/bin/ejabberdapi bin/ejabberdapi
-RUN chmod 755 bin/ejabberdctl bin/ejabberdapi bin/erl
+# COPY --from=api /go/bin/ejabberdapi bin/ejabberdapi
+# RUN chmod 755 bin/ejabberdctl bin/ejabberdapi bin/erl
+RUN chmod 755 bin/ejabberdctl bin/erl
 COPY --chown=ejabberd:ejabberd conf conf/
 ADD --chown=ejabberd:ejabberd https://download.process-one.net/cacert.pem conf/cacert.pem
 
