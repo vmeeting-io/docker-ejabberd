@@ -160,6 +160,18 @@ modules:
   mod_client_state: {}
   mod_configure: {}
   mod_disco: {}
+  {{- if .Env.TURN_HOST }}
+  mod_stun_disco:
+  {{- if .Env.TURN_SECRET }}
+    secret: {{ .Env.TURN_SECRET }}
+  {{- end }}
+    services:
+      -
+        host: {{ .Env.TURN_HOST }}
+        port: {{ .Env.TURN_PORT }}
+        transport: {{ .Env.TURN_TRANSPORT }}
+        type: turn
+  {{- end }}
   # mod_fail2ban: {}
   # mod_http_api: {}
   # mod_http_upload:
