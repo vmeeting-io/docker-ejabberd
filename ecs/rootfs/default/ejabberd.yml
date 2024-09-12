@@ -1,5 +1,16 @@
 {{ $ENABLE_BREAKOUT_ROOMS := .Env.ENABLE_BREAKOUT_ROOMS | default "true" | toBool }}
 {{ $ENABLE_LOBBY := .Env.AUTO_LOBBY_ENABLED | default "false" | toBool }}
+
+default_db: sql
+new_sql_schema: true
+
+sql_type: pgsql
+sql_server: "postgres"
+sql_database: "vmeeting"
+sql_username: "{{ .Env.VMEETING_DB_USER }}"
+sql_password: "{{ .Env.VMEETING_DB_PASS }}"
+sql_port: 5432
+
 hosts:
   - "{{ .Env.XMPP_DOMAIN }}"
   - "guest.{{ .Env.XMPP_DOMAIN }}"
@@ -177,12 +188,11 @@ modules:
   # mod_http_upload:
   #   put_url: https://@HOST@:5443/upload
   mod_last: {}
-  # mod_mam:
-  #   default: always
-  #   ## Mnesia is limited to 2GB, better to use an SQL backend
-  #   ## For small servers SQLite is a good fit and is very easy
-  #   ## to configure. Uncomment this when you have SQL configured:
-  #   assume_mam_usage: true
+  mod_mam:
+    default: always
+    assume_mam_usage: true
+    db_type: sql
+    clear_archive_on_room_destroy: false
   #   default: never
   # mod_mqtt: {}
   mod_muc:
@@ -208,7 +218,7 @@ modules:
       allow_subscription: true  # enable MucSub
       anonymous: true
       allow_user_invites: true
-      mam: false
+      mam: true
       allow_change_subj: true
       allowpm: participants
       members_by_default: true
