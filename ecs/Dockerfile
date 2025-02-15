@@ -118,6 +118,7 @@ RUN wget -q https://github.com/subchen/frep/releases/download/v1.3.13/frep-1.3.1
     chmod +x /usr/bin/tpl
 
 COPY /rootfs/ /
+RUN chmod a+x /wait-for-it.sh
 RUN chmod a+x /entrypoint.sh
 
 RUN chown -R ejabberd:ejabberd /home/ejabberd
